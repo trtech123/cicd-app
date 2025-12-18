@@ -15,9 +15,7 @@ pipeline {
 
         stage('Build Image') {
             steps {
-                sh '''
-                docker build -t $IMAGE:latest .
-                '''
+                sh 'docker build -t $IMAGE:latest .'
             }
         }
 
@@ -40,7 +38,7 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                     docker push $IMAGE:latest
                     '''
                 }
@@ -49,12 +47,10 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sshagent(['app-ssh']) {
-                    sh '''
-                    cd /home/ubuntu/ansible
-                    ansible-playbook -i inventory.ini docker.yml
-                    '''
-                }
+                sh '''
+                cd /opt/ansible
+                ansible-playbook -i inventory.ini docker.yml
+                '''
             }
         }
     }
