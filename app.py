@@ -2,7 +2,7 @@ from flask import Flask
 
 app = Flask(__name__)
 
-MESSAGE = "Hello from version 2 🚀"
+MESSAGE = "Hello from version 3 🚀"
 
 @app.route("/")
 def home():

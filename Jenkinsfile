@@ -15,16 +15,22 @@ pipeline {
 
         stage('Build Image') {
             steps {
-                sh 'docker build -t $IMAGE:latest .'
+                sh '''
+                docker build -t ${IMAGE}:latest .
+                '''
             }
         }
 
         stage('Test App') {
             steps {
                 sh '''
-                docker run -d --name test_app -p 5000:5000 $IMAGE:latest
+                docker rm -f test_app || true
+
+                docker run -d --name test_app -p 5000:5000 ${IMAGE}:latest
                 sleep 5
+
                 curl -f http://localhost:5000/health
+
                 docker rm -f test_app
                 '''
             }
@@ -38,8 +44,8 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    docker push $IMAGE:latest
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push ${IMAGE}:latest
                     '''
                 }
             }
@@ -52,6 +58,18 @@ pipeline {
                 ansible-playbook -i inventory.ini deploy_app.yml
                 '''
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ CI/CD pipeline completed successfully"
+        }
+        failure {
+            echo "❌ Pipeline failed – check logs"
+        }
+        always {
+            sh 'docker logout || true'
         }
     }
 }
