@@ -49,7 +49,7 @@ pipeline {
             steps {
                 sh '''
                 cd /opt/ansible
-                ansible-playbook -i inventory.ini docker.yml
+                ansible-playbook -i inventory.ini deploy_app.yml
                 '''
             }
         }
